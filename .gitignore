@@ -1,0 +1,45 @@
+# Ignore everything by default
+*
+
+# But include these files
+!pomodoro_timer.cpp
+!pomodoro_timer.h
+!main.cpp
+!CMakeLists.txt
+!PomodoroTimer.pro
+!README_POMODORO.md
+!BUILD_WINDOWS.md
+!.github/
+!.gitignore
+
+# Build directories
+build/
+bin/
+
+# Qt generated files
+*.autosave
+*.qmlc
+Makefile*
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*.pro.user
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Compiled files
+*.class
+*.o
+*.pyc
