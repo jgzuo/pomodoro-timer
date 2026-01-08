@@ -1,0 +1,60 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        modules: 'qtwidgets'
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -DCMAKE_PREFIX_PATH="${env:Qt5_DIR}" -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: |
+        cmake --build build --config Release
+
+    - name: Prepare standalone executable
+      run: |
+        mkdir artifact
+        copy build\Release\PomodoroTimer.exe artifact\
+        copy "${env:Qt5_DIR}\bin\Qt5Widgets.dll" artifact\
+        copy "${env:Qt5_DIR}\bin\Qt5Core.dll" artifact\
+        copy "${env:Qt5_DIR}\bin\Qt5Gui.dll" artifact\
+        windeployqt artifact\PomodoroTimer.exe --release --no-translations
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PomodoroTimer-Windows-Portable
+        path: artifact
+        retention-days: 90
+
+    - name: Create ZIP archive
+      run: |
+        Compress-Archive -Path artifact\* -DestinationPath PomodoroTimer-Windows.zip
+
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v4
+      with:
+        name: PomodoroTimer-Windows-ZIP
+        path: PomodoroTimer-Windows.zip
+        retention-days: 90
