@@ -23,6 +23,13 @@ add_executable(PomodoroTimer
 # 链接 Qt5 库
 target_link_libraries(PomodoroTimer Qt5::Widgets)
 
+# 设置为 Windows GUI 应用程序（不显示控制台窗口）
+if(WIN32)
+    set_target_properties(PomodoroTimer PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+endif()
+
 # 设置输出目录
 set_target_properties(PomodoroTimer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
