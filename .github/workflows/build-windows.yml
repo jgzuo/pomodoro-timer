@@ -31,13 +31,21 @@ jobs:
       run: |
         cmake --build build --config Release
 
+    - name: Check build output
+      run: |
+        echo "Checking build directory structure:"
+        Get-ChildItem -Path build -Recurse -Filter "*.exe"
+
     - name: Prepare standalone executable
       run: |
         mkdir artifact
-        copy build\Release\PomodoroTimer.exe artifact\
-        copy "${env:Qt5_DIR}\bin\Qt5Widgets.dll" artifact\
-        copy "${env:Qt5_DIR}\bin\Qt5Core.dll" artifact\
-        copy "${env:Qt5_DIR}\bin\Qt5Gui.dll" artifact\
+        # 查找并复制可执行文件
+        $exePath = Get-ChildItem -Path build -Recurse -Filter "PomodoroTimer.exe" | Select-Object -First 1 -ExpandProperty FullName
+        echo "Found executable at: $exePath"
+        Copy-Item $exePath artifact\
+        Copy-Item "${env:Qt5_DIR}\bin\Qt5Widgets.dll" artifact\
+        Copy-Item "${env:Qt5_DIR}\bin\Qt5Core.dll" artifact\
+        Copy-Item "${env:Qt5_DIR}\bin\Qt5Gui.dll" artifact\
         windeployqt artifact\PomodoroTimer.exe --release --no-translations
 
     - name: Upload artifacts
