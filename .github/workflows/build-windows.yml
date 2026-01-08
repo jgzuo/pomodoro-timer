@@ -25,16 +25,11 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -B build -DCMAKE_PREFIX_PATH="${env:Qt5_DIR}" -DCMAKE_BUILD_TYPE=Release
+        cmake -B build -DCMAKE_PREFIX_PATH="${env:Qt5_DIR}\..\.." -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: |
         cmake --build build --config Release
-
-    - name: Check build output
-      run: |
-        echo "Checking build directory structure:"
-        Get-ChildItem -Path build -Recurse -Filter "*.exe"
 
     - name: Prepare standalone executable
       run: |
@@ -43,10 +38,18 @@ jobs:
         $exePath = Get-ChildItem -Path build -Recurse -Filter "PomodoroTimer.exe" | Select-Object -First 1 -ExpandProperty FullName
         echo "Found executable at: $exePath"
         Copy-Item $exePath artifact\
-        Copy-Item "${env:Qt5_DIR}\bin\Qt5Widgets.dll" artifact\
-        Copy-Item "${env:Qt5_DIR}\bin\Qt5Core.dll" artifact\
-        Copy-Item "${env:Qt5_DIR}\bin\Qt5Gui.dll" artifact\
-        windeployqt artifact\PomodoroTimer.exe --release --no-translations
+
+        # Qt bin 目录 (Qt5_DIR 指向 cmake 目录，需要往上两级)
+        $qtBin = "${env:Qt5_DIR}\..\..\bin"
+        echo "Qt bin directory: $qtBin"
+
+        # 复制 Qt DLL
+        Copy-Item "$qtBin\Qt5Widgets.dll" artifact\
+        Copy-Item "$qtBin\Qt5Core.dll" artifact\
+        Copy-Item "$qtBin\Qt5Gui.dll" artifact\
+
+        # 部署 Qt 依赖
+        & "${env:Qt5_DIR}\..\..\bin\windeployqt.exe" artifact\PomodoroTimer.exe --release --no-translations
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
